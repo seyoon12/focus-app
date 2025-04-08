@@ -1,0 +1,5 @@
+flutter emulators --launch Medium_Phone_API_36
+flutter pub get
+flutter run
+flutter run -d RFCM9073RVR
+flutter run -d R3CX70J5YCR
