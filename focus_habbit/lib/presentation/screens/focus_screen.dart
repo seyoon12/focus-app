@@ -9,6 +9,8 @@ class FocusTimerScreen extends StatefulWidget {
 
   @override
   State<FocusTimerScreen> createState() => _FocusTimerScreenState();
+
+  
 }
 
 class _FocusTimerScreenState extends State<FocusTimerScreen> with WidgetsBindingObserver {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class CustomCalendar extends StatelessWidget {
   final DateTime selectedDate;
@@ -52,7 +53,7 @@ class CustomCalendar extends StatelessWidget {
                     }
 
                     final isSelected = cellDate != null &&
-                        selectedDate.year == cellDate.year &&
+                        selectedDate.year == cellDate!.year &&
                         selectedDate.month == cellDate.month &&
                         selectedDate.day == cellDate.day;
 
@@ -61,6 +62,13 @@ class CustomCalendar extends StatelessWidget {
                             e.year == cellDate!.year &&
                             e.month == cellDate.month &&
                             e.day == cellDate.day);
+
+                    final eventCount = cellDate == null
+                        ? 0
+                        : eventDates.where((e) =>
+                            e.year == cellDate!.year &&
+                            e.month == cellDate.month &&
+                            e.day == cellDate.day).length;
 
                     final isSunday = dayIndex == 0;
                     final isSaturday = dayIndex == 6;
@@ -71,55 +79,74 @@ class CustomCalendar extends StatelessWidget {
                         child: InkWell(
                           onTap: cellDate != null ? () => onDateSelected(cellDate!) : null,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: 2),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Container(
-                                  decoration: isSelected
-                                      ? BoxDecoration(
-                                          border: Border.all(color: Colors.red, width: 1),
-                                          borderRadius: BorderRadius.circular(6),
-                                        )
-                                      : null,
-                                  padding: const EdgeInsets.all(6),
-                                  child: Text(
-                                    isInMonth ? '$dayNumber' : '',
-                                    style: TextStyle(
-                                      color: isInMonth
-                                          ? (isSunday || isSaturday
-                                              ? Colors.redAccent
-                                              : Colors.black87)
-                                          : Colors.grey,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
-                                      fontSize: 14,
+                                Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Container(
+                                    decoration: isSelected
+                                        ? BoxDecoration(
+                                            border: Border.all(color: Colors.red, width: 1),
+                                            borderRadius: BorderRadius.circular(6),
+                                          )
+                                        : null,
+                                    padding: const EdgeInsets.all(4),
+                                    child: Text(
+                                      isInMonth ? '$dayNumber' : '',
+                                      style: TextStyle(
+                                        color: isInMonth
+                                            ? (isSunday || isSaturday
+                                                ? Colors.redAccent
+                                                : Colors.black87)
+                                            : Colors.grey,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 if (hasEvent)
-                                  dragStage != 2
-                                      ? Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 2),
-                                          margin: const EdgeInsets.only(top: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red[100],
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: const Text(
-                                            '일정',
-                                            style: TextStyle(fontSize: 9, color: Colors.red),
-                                          ),
-                                        )
-                                      : Container(
-                                          width: 6,
-                                          height: 6,
-                                          margin: const EdgeInsets.only(top: 4),
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.redAccent,
-                                          ),
-                                        ),
+  Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: dragStage == 0
+        ? Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.red[100],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              '일정',
+              style: TextStyle(fontSize: 9, color: Colors.red),
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center, // ✅ 가운데 정렬
+            children: [
+              Container(
+                width: 16,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              if (eventCount > 1)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text(
+                    'x$eventCount',
+                    style: const TextStyle(fontSize: 8, color: Colors.redAccent),
+                  ),
+                ),
+            ],
+          ),
+  ),
+
                               ],
                             ),
                           ),

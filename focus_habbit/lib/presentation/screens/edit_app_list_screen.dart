@@ -23,7 +23,7 @@ class _EditAppListScreenState extends State<EditAppListScreen> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState();  
     selectedApps = List<String>.from(widget.apps);
     _loadApps();
   }
