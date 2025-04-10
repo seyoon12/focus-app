@@ -5,7 +5,28 @@ final : 컴파일 / 런타임 상수
 ->
 컴파일 타임 상수는 const로 선언하여 성능 최적화 필요
 
-# ---
-
 비동기 : 요청을 받고 응답을 받아야만 다음 동작
 동기   : 응답 없이 다음 동작
+
+렌더링 : UI를 어떻게 구성할지 컴포넌트에게 요청하는 작업
+
+# ---
+
+@override : 부모 클래스의 build 매서드를 재정의
+build     : Flutter 위젯을 그릴 때 호출 즉 UI를 그림
+return    : 함수가 결과값을 되돌려주는 키워드
+매서드     : 클래스 안에 있는 함수 / 클래스의 동작을 정의한 함수
+hasEvent    : true / false 담은 함수
+
+()         : 안에 들어 있다면 하나의 요소로 사용한다
+-> 예시)   
+eventDates.any((e) =>
+    e.year == cellDate.year // eventDates 안에 있는 요소 중 year가 cellDate.year와 같다면 true 반환, e.year 같은 경우는 dart 내장 함수에서 년도인것을 바로 안다
+
+widget : ui를 구성하는 모든 것 / 텍스트, 박스, 정렬 등등
+child : 하나의 위젯만 넣을 수 있음
+childern : 여러 위젯을 리스트로 넣을 수 있음
+container   : 박스 위젯
+조건 ? 참일 때 값 : 거짓일 때 값;
+void : 아무 것도 return 하지 않는다는 뜻
+super : 부모 클래스의 메서드나 생성자를 부를 때 사용 / 자식 클래스에서 부모 기능 재사용 시

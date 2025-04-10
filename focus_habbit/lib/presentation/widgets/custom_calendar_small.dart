@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 
 class CustomCalendarSmall extends StatefulWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
-  final List<DateTime> eventDates;
-  final int dragStage;
-  final Function(int) onDragStageChanged;
 
   const CustomCalendarSmall({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
-    required this.eventDates,
-    required this.dragStage,
-    required this.onDragStageChanged,
   });
 
   @override
@@ -23,151 +16,121 @@ class CustomCalendarSmall extends StatefulWidget {
 }
 
 class _CustomCalendarSmallState extends State<CustomCalendarSmall> {
-  late DateTime _currentMonth;
-  double _dragStartY = 0;
-  bool _hasDragged = false;
+  late DateTime _focusedMonth;
 
   @override
   void initState() {
     super.initState();
-    _currentMonth = DateTime(widget.selectedDate.year, widget.selectedDate.month);
+    _focusedMonth = DateTime(widget.selectedDate.year, widget.selectedDate.month);
   }
 
-  List<DateTime> _getDaysInMonth(DateTime month) {
-    final first = DateTime(month.year, month.month, 1);
-    final last = DateTime(month.year, month.month + 1, 0);
-    final firstWeekday = first.weekday % 7;
-
-    final List<DateTime> daysBefore = List.generate(
-      firstWeekday,
-      (i) => first.subtract(Duration(days: firstWeekday - i)),
-    );
-
-    final List<DateTime> daysInMonth = List.generate(
-      last.day,
-      (i) => DateTime(month.year, month.month, i + 1),
-    );
-
-    final List<DateTime> total = [...daysBefore, ...daysInMonth];
-    final int remaining = 7 - (total.length % 7);
-    final List<DateTime> filler = remaining < 7
-        ? List.generate(remaining, (i) => last.add(Duration(days: i + 1)))
-        : <DateTime>[];
-
-    final List<DateTime> allDays = [...total, ...filler];
-
-    if (widget.dragStage == 2) {
-      return allDays.sublist(allDays.length - 7);
-    }
-
-    return allDays;
+  // 해당 월의 첫 요일 위치 계산
+  int _getStartWeekdayOfMonth() {
+    return DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday % 7;
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+  // 해당 월의 마지막 날짜
+  int _getDaysInMonth() {
+    final nextMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 1);
+    return nextMonth.subtract(const Duration(days: 1)).day;
+  }
+
+  void _goToPrevMonth() {
+    setState(() {
+      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
+    });
+  }
+
+  void _goToNextMonth() {
+    setState(() {
+      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
+    });
   }
 
   @override
-Widget build(BuildContext context) {
-  final days = _getDaysInMonth(_currentMonth);
-  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  Widget build(BuildContext context) {
+    final daysInMonth = _getDaysInMonth();
+    final startWeekday = _getStartWeekdayOfMonth();
+    final List<Widget> dayTiles = [];
 
-  return Listener(
-    onPointerDown: (event) {
-      _dragStartY = event.position.dy;
-      _hasDragged = false;
-    },
-    onPointerMove: (event) {
-      final dy = event.position.dy - _dragStartY;
-      const threshold = 20.0;
-      if (!_hasDragged && dy < -threshold && widget.dragStage < 2) {
-        _hasDragged = true;
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          widget.onDragStageChanged(widget.dragStage + 1);
-        });
-      } else if (!_hasDragged && dy > threshold && widget.dragStage > 0) {
-        _hasDragged = true;
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          widget.onDragStageChanged(widget.dragStage - 1);
-        });
-      }
-    },
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text(
-            DateFormat('y년 M월', 'ko').format(_currentMonth),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    // 빈 공간 채우기 (1일 시작 전)
+    for (int i = 0; i < startWeekday; i++) {
+      dayTiles.add(const SizedBox.shrink());
+    }
+
+    // 날짜 위젯 생성
+    for (int i = 1; i <= daysInMonth; i++) {
+      final date = DateTime(_focusedMonth.year, _focusedMonth.month, i);
+      final isSelected = DateUtils.isSameDay(date, widget.selectedDate);
+
+      dayTiles.add(
+        GestureDetector(
+          onTap: () => widget.onDateSelected(date),
+          child: Container(
+            alignment: Alignment.center,
+            decoration: isSelected
+                ? BoxDecoration(
+                    color: Colors.black,
+                    shape: BoxShape.circle,
+                  )
+                : null,
+            child: Text(
+              '$i',
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ),
         ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 상단 년/월 & 화살표
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(onPressed: _goToPrevMonth, icon: const Icon(Icons.chevron_left)),
+            Text(
+              DateFormat('yyyy년 M월', 'ko').format(_focusedMonth),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            IconButton(onPressed: _goToNextMonth, icon: const Icon(Icons.chevron_right)),
+          ],
+        ),
+
+        // 요일 헤더
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const [
+              Text('일', style: TextStyle(color: Colors.red)),
+              Text('월'),
+              Text('화'),
+              Text('수'),
+              Text('목'),
+              Text('금'),
+              Text('토', style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // 날짜들 (7열 그리드)
         GridView.count(
           crossAxisCount: 7,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          children: weekDays
-              .map((d) => Center(child: Text(d, style: const TextStyle(fontSize: 12))))
-              .toList(),
-        ),
-        Expanded(
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: days.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 1,
-            ),
-            itemBuilder: (_, index) {
-              final day = days[index];
-              final isSelected = _isSameDay(day, widget.selectedDate);
-              final isCurrentMonth = day.month == _currentMonth.month;
-              final hasEvent = widget.eventDates.any((e) => _isSameDay(e, day));
-
-              return GestureDetector(
-                onTap: () {
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    widget.onDateSelected(day);
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.redAccent.withOpacity(0.15) : null,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Text(
-                        '${day.day}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isCurrentMonth ? Colors.black : Colors.grey,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      if (hasEvent)
-                        Positioned(
-                          bottom: 4,
-                          child: Container(
-                            width: 4,
-                            height: 4,
-                            decoration: const BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+          childAspectRatio: 1.2,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          children: dayTiles,
         ),
       ],
-    ),
-  );
-}
-
+    );
+  }
 }

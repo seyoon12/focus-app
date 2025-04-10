@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>앱이 카메라를 사용하려고 합니다</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>앱이 사진에 접근하려고 합니다</string>
 </dict>
 </plist>

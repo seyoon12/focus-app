@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.indigo,
+        fontFamily: 'NotoSansKR'
       ),
       home: const HomeScreen(),
     );
