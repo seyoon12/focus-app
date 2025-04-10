@@ -1,6 +1,6 @@
 # 달력을 통한 SNS 프로젝트
 ## 진행중 25%
-### 예시 / 
+### 예시 (2025-04-10)
 <div style="display: flex; gap: 10px;">
   <img src="https://github.com/user-attachments/assets/755ffadd-725f-491e-94b1-d749e90662e1" alt="img1" style="width: 30%; height: auto;" />
   <img src="https://github.com/user-attachments/assets/b83f6d3e-b8f9-4c59-844a-1768a1ce8104" alt="img2" style="width: 30%; height: auto;" />
